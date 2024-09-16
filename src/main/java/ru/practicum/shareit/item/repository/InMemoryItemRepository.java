@@ -28,11 +28,8 @@ public class InMemoryItemRepository implements ItemRepository {
 
     @Override
     public Item checkAndGetById(long itemId) {
-        Optional<Item> existingItem = getById(itemId);
-        if (existingItem.isEmpty()) {
-            throw new NotFoundException("item doesn't exist with id: " + itemId);
-        }
-        return existingItem.get();
+        return getById(itemId)
+                .orElseThrow(() -> new NotFoundException("item doesn't exist with id: " + itemId));
     }
 
     @Override

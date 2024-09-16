@@ -4,7 +4,9 @@ import org.springframework.stereotype.Component;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.model.User;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 @Component
 public class InMemoryUserRepository implements UserRepository {
@@ -25,11 +27,8 @@ public class InMemoryUserRepository implements UserRepository {
 
     @Override
     public User checkAndGetById(long userId) {
-        Optional<User> existingUser = getById(userId);
-        if (existingUser.isEmpty()) {
-            throw new NotFoundException("User doesn't exist with id: " + userId);
-        }
-        return existingUser.get();
+        return getById(userId)
+                .orElseThrow(() -> new NotFoundException("User doesn't exist with id: " + userId));
     }
 
     @Override
