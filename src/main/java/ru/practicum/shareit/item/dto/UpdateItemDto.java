@@ -1,13 +1,13 @@
 package ru.practicum.shareit.item.dto;
 
 import lombok.Data;
-import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.validation.NullOrNotBlank;
 
 @Data
-public class ItemDto {
-    private long id;
+public class UpdateItemDto {
+    @NullOrNotBlank
     private String name;
+    @NullOrNotBlank
     private String description;
     private Boolean available;
-    private User owner;
 }
