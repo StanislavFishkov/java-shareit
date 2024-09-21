@@ -7,9 +7,9 @@ import ru.practicum.shareit.user.dto.UserDto;
 public interface UserService {
     UserDto create(NewUserDto newUserDto);
 
-    UserDto get(long userId);
+    UserDto get(Long userId);
 
-    UserDto update(long userId, UpdateUserDto updateUserDto);
+    UserDto update(Long userId, UpdateUserDto updateUserDto);
 
-    void delete(long userId);
+    void delete(Long userId);
 }
