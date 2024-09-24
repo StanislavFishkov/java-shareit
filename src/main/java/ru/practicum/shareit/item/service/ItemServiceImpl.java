@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.model.Booking;
@@ -21,7 +22,12 @@ import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @Service
@@ -76,11 +82,30 @@ public class ItemServiceImpl implements ItemService {
         User owner = checkAndGetUserById(userId);
 
         List<Item> items = itemRepository.findAllByOwner(owner);
+
+        Map<Item, List<Comment>> commentsByItems = commentRepository.findByItemIn(items, Sort.by(Sort.Order.desc("created")))
+                .stream()
+                .collect(groupingBy(Comment::getItem, toList()));
+
+        Map<Item, List<Booking>> bookingsByItems = bookingRepository.findByItemIn(items)
+                .stream()
+                .collect(groupingBy(Booking::getItem, toList()));
+
         LocalDateTime currentDateTime = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
         List<ItemWithLastAndNextBookingsAndCommentsDto> itemsDto = items.stream()
-                .map(item -> itemMapper.toDto(item, commentRepository.findByItemIdOrderByCreatedDesc(item.getId()),
-                                bookingRepository.findTopByItemIdAndEndBeforeOrderByEndDesc(item.getId(), currentDateTime),
-                                bookingRepository.findTopByItemIdAndStartAfterOrderByStartAsc(item.getId(), currentDateTime))
+                .map(item -> itemMapper.toDto(
+                        item,
+                        commentsByItems.getOrDefault(item, List.of()),
+                        bookingsByItems.getOrDefault(item, List.of())
+                                .stream()
+                                .filter(booking -> booking.getEnd().isBefore(currentDateTime))
+                                .max(Comparator.comparing(Booking::getEnd))
+                                .orElse(null),
+                        bookingsByItems.getOrDefault(item, List.of())
+                                .stream()
+                                .filter(booking -> booking.getStart().isAfter(currentDateTime))
+                                .min(Comparator.comparing(Booking::getStart))
+                                .orElse(null))
                 )
                 .toList();
         log.trace("Items are requested by owner with id: {}", userId);
