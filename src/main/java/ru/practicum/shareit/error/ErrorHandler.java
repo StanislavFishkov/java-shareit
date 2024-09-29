@@ -14,9 +14,6 @@ import ru.practicum.shareit.exception.DataConflictException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Slf4j
 @RestControllerAdvice
 public class ErrorHandler {
@@ -44,32 +41,32 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public List<ErrorResponse> handleConstraintViolationException(ConstraintViolationException e) {
-        List<ErrorResponse> errors = new ArrayList<>();
+    public ErrorResponse handleConstraintViolationException(ConstraintViolationException e) {
+        ErrorResponse errorResponse = new ErrorResponse("Constraints are not met");
 
         e.getConstraintViolations().forEach(violation -> {
             String fieldName = ((PathImpl) violation.getPropertyPath()).getLeafNode().asString();
             String errorMessage = String.format("Not valid field %s: %s", fieldName, violation.getMessage());
-            errors.add(new ErrorResponse(errorMessage));
+            errorResponse.getDetails().add(errorMessage);
             log.error(errorMessage);
         });
 
-        return errors;
+        return errorResponse;
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public List<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        List<ErrorResponse> errors = new ArrayList<>();
+    public ErrorResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        ErrorResponse errorResponse = new ErrorResponse("Constraints are not met");
 
         e.getBindingResult().getFieldErrors().forEach(fieldError -> {
             String errorMessage = String.format("Not valid field %s: %s", fieldError.getField(),
                     fieldError.getDefaultMessage());
-            errors.add(new ErrorResponse(errorMessage));
+            errorResponse.getDetails().add(errorMessage);
             log.error(errorMessage);
         });
 
-        return errors;
+        return errorResponse;
     }
 
     @ExceptionHandler(MissingRequestHeaderException.class)

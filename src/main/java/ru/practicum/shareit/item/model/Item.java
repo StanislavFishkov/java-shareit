@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.proxy.HibernateProxy;
+import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.Objects;
@@ -25,8 +26,11 @@ public class Item {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    @ToString.Exclude
     private User owner;
+
+    @ManyToOne
+    @JoinColumn(name = "request_id")
+    private ItemRequest request;
 
     @Override
     public final boolean equals(Object o) {

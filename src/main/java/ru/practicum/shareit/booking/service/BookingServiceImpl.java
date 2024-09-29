@@ -17,9 +17,9 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.util.DateTimeUtils;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Slf4j
@@ -99,12 +99,12 @@ public class BookingServiceImpl implements BookingService {
     public List<BookingDto> getByBookerId(Long bookerId, BookingState state) {
         checkAndGetUserById(bookerId);
 
-        LocalDateTime currentTime = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+        LocalDateTime currentDateTime = DateTimeUtils.currentDateTime();
         List<Booking> bookings = switch (state) {
             case ALL -> bookingRepository.findByBookerIdOrderByStartDesc(bookerId);
-            case CURRENT -> bookingRepository.findByBookerIdAndCurrentOrderByStartDesc(bookerId, currentTime);
-            case PAST -> bookingRepository.findByBookerIdAndEndBeforeOrderByStartDesc(bookerId, currentTime);
-            case FUTURE -> bookingRepository.findByBookerIdAndStartAfterOrderByStartDesc(bookerId, currentTime);
+            case CURRENT -> bookingRepository.findByBookerIdAndCurrentOrderByStartDesc(bookerId, currentDateTime);
+            case PAST -> bookingRepository.findByBookerIdAndEndBeforeOrderByStartDesc(bookerId, currentDateTime);
+            case FUTURE -> bookingRepository.findByBookerIdAndStartAfterOrderByStartDesc(bookerId, currentDateTime);
             case WAITING -> bookingRepository.findByBookerIdAndStatusOrderByStartDesc(bookerId, BookingStatus.WAITING);
             case REJECTED -> bookingRepository.findByBookerIdAndStatusOrderByStartDesc(bookerId, BookingStatus.REJECTED);
         };
@@ -117,12 +117,12 @@ public class BookingServiceImpl implements BookingService {
     public List<BookingDto> getByOwnerId(Long ownerId, BookingState state) {
         checkAndGetUserById(ownerId);
 
-        LocalDateTime currentTime = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+        LocalDateTime currentDateTime = DateTimeUtils.currentDateTime();
         List<Booking> bookings = switch (state) {
             case ALL -> bookingRepository.findByItemOwnerIdOrderByStartDesc(ownerId);
-            case CURRENT -> bookingRepository.findByItemOwnerIdAndCurrentOrderByStartDesc(ownerId, currentTime);
-            case PAST -> bookingRepository.findByItemOwnerIdAndEndBeforeOrderByStartDesc(ownerId, currentTime);
-            case FUTURE -> bookingRepository.findByItemOwnerIdAndStartAfterOrderByStartDesc(ownerId, currentTime);
+            case CURRENT -> bookingRepository.findByItemOwnerIdAndCurrentOrderByStartDesc(ownerId, currentDateTime);
+            case PAST -> bookingRepository.findByItemOwnerIdAndEndBeforeOrderByStartDesc(ownerId, currentDateTime);
+            case FUTURE -> bookingRepository.findByItemOwnerIdAndStartAfterOrderByStartDesc(ownerId, currentDateTime);
             case WAITING -> bookingRepository.findByItemOwnerIdAndStatusOrderByStartDesc(ownerId, BookingStatus.WAITING);
             case REJECTED -> bookingRepository.findByItemOwnerIdAndStatusOrderByStartDesc(ownerId, BookingStatus.REJECTED);
         };

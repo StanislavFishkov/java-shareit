@@ -6,6 +6,7 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 
@@ -24,15 +25,18 @@ public interface ItemMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "owner", ignore = true)
+    @Mapping(target = "request", ignore = true)
     Item toItem(NewItemDto newItemDto);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "name", source = "newItemDto.name")
+    @Mapping(target = "description", source = "newItemDto.description")
     @Mapping(target = "owner", source = "owner")
-    Item toItem(NewItemDto newItemDto, User owner);
+    Item toItem(NewItemDto newItemDto, User owner, ItemRequest request);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "owner", ignore = true)
+    @Mapping(target = "request", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     Item updateItem(@MappingTarget Item item, UpdateItemDto updateItemDto);
 }

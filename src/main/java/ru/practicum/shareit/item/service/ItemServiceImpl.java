@@ -17,11 +17,13 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.util.DateTimeUtils;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +42,7 @@ public class ItemServiceImpl implements ItemService {
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
+    private final ItemRequestRepository itemRequestRepository;
 
     private User checkAndGetUserById(Long userId) {
         return userRepository.findById(userId)
@@ -51,7 +54,14 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto create(Long userId, NewItemDto newItemDto) {
         User owner = checkAndGetUserById(userId);
 
-        Item createdItem = itemRepository.save(itemMapper.toItem(newItemDto, owner));
+        ItemRequest itemRequest = null;
+        if (newItemDto.getRequestId() != null) {
+            itemRequest = itemRequestRepository.findById(newItemDto.getRequestId())
+                    .orElseThrow(() -> new NotFoundException("On Item creation - Item request doesn't exist with id: "
+                            + newItemDto.getRequestId()));
+        }
+
+        Item createdItem = itemRepository.save(itemMapper.toItem(newItemDto, owner, itemRequest));
         log.info("item is created: {}", createdItem);
         return itemMapper.toDto(createdItem);
     }
@@ -63,7 +73,7 @@ public class ItemServiceImpl implements ItemService {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Item doesn't exist on get with id: " + itemId));
 
-        LocalDateTime currentDateTime = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+        LocalDateTime currentDateTime = DateTimeUtils.currentDateTime();
         List<Comment> comments = commentRepository.findByItemIdOrderByCreatedDesc(itemId);
         Booking lastBooking = null;
         Booking nextBooking = null;
@@ -91,7 +101,7 @@ public class ItemServiceImpl implements ItemService {
                 .stream()
                 .collect(groupingBy(Booking::getItem, toList()));
 
-        LocalDateTime currentDateTime = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+        LocalDateTime currentDateTime = DateTimeUtils.currentDateTime();
         List<ItemWithLastAndNextBookingsAndCommentsDto> itemsDto = items.stream()
                 .map(item -> itemMapper.toDto(
                         item,
@@ -143,7 +153,7 @@ public class ItemServiceImpl implements ItemService {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Create Comment - Item doesn't exist with id: " + itemId));
 
-        LocalDateTime currentDateTime = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+        LocalDateTime currentDateTime = DateTimeUtils.currentDateTime();
         List<Booking> previousBookings = bookingRepository.findByItemIdAndBookerIdAndStatusAndEndBefore(itemId, userId,
                 BookingStatus.APPROVED, currentDateTime);
         if (previousBookings.isEmpty())
