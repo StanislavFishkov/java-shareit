@@ -1,9 +1,7 @@
 package ru.practicum.shareit.request.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.util.DateTimeUtils;
@@ -16,6 +14,9 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
+@Builder(toBuilder = true)
+@AllArgsConstructor
+@NoArgsConstructor
 public class ItemRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,6 +28,7 @@ public class ItemRequest {
     @JoinColumn(name = "requester_id")
     private User requester;
 
+    @Builder.Default
     private LocalDateTime created = DateTimeUtils.currentDateTime();
 
     @OneToMany(mappedBy = "request")
